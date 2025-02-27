@@ -26,15 +26,11 @@ class Lexer {
 private:
     std::string input;
     size_t pos = 0;
-    std::unordered_set<std::string> keywords = {"if", "then", "else", "int", "char", "for"};
-    std::unordered_map<std::string, int> keywords_map;
-    std::unordered_map<std::string, int> operators_map;
-    std::unordered_map<std::string, int> delimiters_map;
+    std::unordered_map<std::string, int> keywords_map = {{"if", 11}, {"then", 12}, {"else", 13}, {"int", 14}, {"char", 15}, {"for", 16}};
+    std::unordered_map<std::string, int> operators_map = {{"=", 21}, {">=", 22}, {"==", 23}, {"+", 24}, {"/", 25}, {"%", 26}, {"++", 27}};
+    std::unordered_map<std::string, int> delimiters_map = {{"\"", 31}, {";", 32}};
     std::unordered_map<std::string, int> variables_map;
     std::unordered_map<std::string, int> constants_map;
-    int keywordCounter = 11;
-    int operatorCounter = 21;
-    int delimiterCounter = 31;
     int variableCounter = 41;
     int constantCounter = 51;
 
@@ -67,21 +63,6 @@ public:
 
     void insert_map(TokenType type, std::string value) {
         switch (type) {
-            case TokenType::KEYWORD:
-                if (keywords_map.count(value) == 0) {
-                    keywords_map[value] = keywordCounter++;
-                }
-                break;
-            case TokenType::OPERATOR:
-                if (operators_map.count(value) == 0) {
-                    operators_map[value] = operatorCounter++;
-                }
-                break;
-            case TokenType::DELIMITER:
-                if (delimiters_map.count(value) == 0) {
-                    delimiters_map[value] = delimiterCounter++;
-                }
-                break;
             case TokenType::IDENTIFIER:
                 if (variables_map.count(value) == 0) {
                     variables_map[value] = variableCounter++;
@@ -123,8 +104,7 @@ public:
             if (ident.length() >= 10)
                 return {TokenType::ERROR, ident};
                 
-            if (keywords.count(ident)) {
-                insert_map(TokenType::KEYWORD, ident);
+            if (keywords_map.count(ident)) {
                 return {TokenType::KEYWORD, ident};
             }
             
@@ -162,17 +142,14 @@ public:
             
             if (curr == '=' && peek() == '=') {
                 consume();
-                insert_map(TokenType::OPERATOR, "==");
                 return {TokenType::OPERATOR, "=="};
             }
             if (curr == '>' && peek() == '=') {
                 consume();
-                insert_map(TokenType::OPERATOR, ">=");
                 return {TokenType::OPERATOR, ">="};
             }
             if (curr == '+' && peek() == '+') {
                 consume();
-                insert_map(TokenType::OPERATOR, "++");
                 return {TokenType::OPERATOR, "++"};
             }
             if (curr == '<' && peek() == '=') {
@@ -181,14 +158,12 @@ public:
             }
             if (op == ">" || op == "<") return {TokenType::ERROR, op}; // 单独><非法
 
-            insert_map(TokenType::OPERATOR, op);
             return {TokenType::OPERATOR, op};
         }
         
         // 处理分隔符
         if (curr == '\"' || curr == ';') {
             consume();
-            insert_map(TokenType::DELIMITER, std::string(1, curr));
             return {TokenType::DELIMITER, std::string(1, curr)};
         }
         
