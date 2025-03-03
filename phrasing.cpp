@@ -97,7 +97,7 @@ public:
                 do {
                     ident += curr;
                     consume();
-                } while (isdigit(curr = peek()));
+                } while (isdigit(curr = peek()) || isalpha(curr = peek()));
                 return {TokenType::ERROR, ident};
             }
 
